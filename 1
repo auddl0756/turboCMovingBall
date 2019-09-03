@@ -1,0 +1,434 @@
+//<움직이는 공 C코드 (리스트화..포인터 꼬임 풀음)>
+
+
+#include <stdio.h>
+#include <conio.h>
+#include <math.h>
+#include <stdlib.h>
+#include <graphics.h>
+#include <dos.h>
+enum Boolean {f,t};
+const int ESC =27;
+
+struct loca{
+	int X,Y;
+};
+struct loca locate;
+
+void initlocate(int initx,int inity){locate.X=initx; locate.Y=inity;}
+int locate_getX(){return locate.X;}
+int locate_getY(){return locate.Y;}
+
+///=================================================================l
+
+ocation define..///
+
+struct pt{
+	int X,Y;
+	int color;
+};
+struct pt point;
+
+void initpoint(int initx,int inity,int initcolor){
+	point.X=initx;
+	point.Y=inity;
+	point.color=initcolor;
+	setcolor(initcolor);
+}
+
+void show_point(){putpixel(point.X,point.Y,getcolor());}
+void hide_point(){putpixel(point.X,point.Y,getbkcolor());}
+
+void moveTo_point(int newX,int newY){
+	hide_point();
+	point.X=newX;
+	point.Y=newY;
+	show_point();
+}
+
+void changeColor_point(int newColor){
+	hide_point();
+	point.color=newColor;
+	setcolor(newColor);
+	show_point();
+}
+
+///======================================================point 
+
+define..///
+
+struct cir{
+	int X,Y,color;
+	int Radius;
+};
+struct cir circles;
+
+void initcircles(int initX,int initY,int initColor,int initRadius){
+	circles.X=initX;
+	circles.Y=initY;
+	circles.color=initColor;
+	circles.Radius=initRadius;
+}
+
+void show_circles(){
+	circle(circles.X,circles.Y,circles.Radius);
+}
+void hide_circles(){
+	unsigned int tempcolor;
+	tempcolor=getcolor();
+	setcolor(getbkcolor());
+	circle(circles.X,circles.Y,circles.Radius);
+	setcolor(tempcolor);
+}
+
+void moveTo_circles(int newX,int newY){
+	hide_circles();
+	//circle(newX,newY,circles.Radius);
+	circles.X=newX;
+	circles.Y=newY;
+	show_circles();
+
+}
+
+///============================================================circle
+
+s define..///
+
+struct bal{
+	//static int X,Y,color,Radius;
+	//static int Xvel,Yvel;
+	int X,Y,color,Radius, Xvel,Yvel;
+};
+struct bal ball1,ball2;
+
+void initball(struct bal *balls,int initX,int initY,int initXvel,int 
+
+initYvel,int initColor,int initRadius){
+	balls->X=initX;
+	balls->Y=initY;
+	balls->Xvel=initXvel;
+	balls->Yvel=initYvel;
+	balls->color=initColor;
+	balls->Radius=initRadius;
+	
+};
+
+void show_ball(struct bal *balls){
+	setfillstyle(1,getcolor());
+	fillellipse(balls->X,balls->Y,balls->Radius,balls->Radius);
+}
+
+void hide_ball(struct bal *balls){
+	unsigned int tempcolor;
+	tempcolor=getcolor();
+	setfillstyle(EMPTY_FILL,getmaxcolor());
+	setcolor(getbkcolor());
+	fillellipse(balls->X,balls->Y,balls->Radius,balls->Radius);
+	setcolor(tempcolor);
+	setfillstyle(1,getcolor());
+	
+}
+
+void reversex(struct bal *balls){
+	
+	balls->Xvel=(balls->Xvel)*-1; 
+}
+void reversey(struct bal *balls){
+	balls->Yvel=(balls->Yvel)*-1; 
+}
+
+void move_ball(struct bal *balls){
+	hide_ball(balls);
+	balls->X+=balls->Xvel;
+	balls->Y+=balls->Yvel;
+	show_ball(balls);
+	
+}
+enum Boolean collide_ball(struct bal *balls1,struct bal *balls2){
+	double const Pi=3.141592;
+	int t1,t2,t3;
+	double th;
+
+	t1=balls1->X-balls2->X;
+	t2=balls1->Y-balls2->Y;
+	t3=balls1->Radius+balls2->Radius;
+
+	if(abs(t1)<=t3){
+		if(abs(t2)<=t3){
+			if((t1*t1 +t2*t2)<t3*t3){
+				if(t1!=0){
+					th=atan(t2/t1);
+				}
+				else{
+					th=Pi;
+				}
+				if((abs(th)<0.2) ||abs(th-2*Pi)<0.2){
+					reversex(balls1);
+					reversex(balls2);
+					printf("collid");
+				}
+				else{
+					if(abs(th-Pi)<0.2){
+						reversey(balls1);
+						reversey(balls2);
+						printf("collide");
+					}
+					else{
+						reversex(balls1);
+						reversey(balls1);
+						reversex(balls2);
+						reversey(balls2);
+					}
+				}
+
+			}
+		}
+	}
+}
+
+///============================================================ball 
+
+define..///
+
+enum BoundaryIndex{LeftBound,UpperBound,RightBound,LowerBound};
+
+struct Boundary{
+	int X,Y,Color;
+	int Width,Thick;
+	int Leftborder,Upperborder,Rightborder,Lowerborder;
+	enum BoundaryIndex index;
+};
+struct Boundary Left,Right,Upper,Lower;
+
+void initboundary_Left(int initX,int initY,int initWidth,int 
+
+initColor,int initThick,enum BoundaryIndex initIndex){
+	Left.X=initX;  Left.Y=initY;
+	Left.Width=initWidth;  Left.Color=initColor;
+	Left.Thick=initThick;  Left.index=initIndex;
+	Left.Leftborder=initX+initThick;
+}
+//void SetPos();
+void drawBoundary_Left(){bar(Left.X,Left.Y,Left.X+Left.Thick,Left.Y
+
++Left.Width);}
+void show_Boundary_Left(){drawBoundary_Left();}
+void hide_Boundary_Left(){
+	unsigned int tempColor;
+	tempColor=getcolor();
+	setfillstyle(EMPTY_FILL,getmaxcolor());
+	setcolor(getbkcolor());
+	drawBoundary_Left();
+	setcolor(tempColor);
+	setfillstyle(SOLID_FILL,getcolor());
+}
+
+enum Boolean collide_boundary_Left(struct bal *balls){
+		//printf("cblad :%d ",balls);
+	if(((balls->X)-(balls->Radius))<=Left.Leftborder){
+		reversex(balls);
+		move_ball(balls);
+		show_Boundary_Left();
+	}
+}
+
+void initboundary_Upper(int initX,int initY,int initWidth,int 
+
+initColor,int initThick,enum BoundaryIndex initIndex){
+	Upper.X=initX;  Upper.Y=initY;
+	Upper.Width=initWidth;  Upper.Color=initColor;
+	Upper.Thick=initThick;  Upper.index=initIndex;
+	Upper.Upperborder=initY+initThick;
+}
+//void SetPos();
+
+void drawBoundary_Upper(){bar(Upper.X,Upper.Y,Upper.X
+
++Upper.Width,Upper.Y+Upper.Thick);}
+void show_Boundary_Upper(){drawBoundary_Upper();}
+void hide_Boundary_Upper(){
+	unsigned int tempColor;
+	tempColor=getcolor();
+	setfillstyle(EMPTY_FILL,getmaxcolor());
+	setcolor(getbkcolor());
+	drawBoundary_Upper();
+	setcolor(tempColor);
+	setfillstyle(SOLID_FILL,getcolor());
+}
+enum Boolean collide_boundary_Upper(struct bal *balls){	
+	if(((balls->Y)-(balls->Radius))<=Upper.Upperborder){
+		reversey(balls);
+		move_ball(balls);
+		show_Boundary_Upper();
+	}
+}
+void initboundary_Right(int initX,int initY,int initWidth,int 
+
+initColor,int initThick,enum BoundaryIndex initIndex){
+	Right.X=initX;  Right.Y=initY;
+	Right.Width=initWidth;  Right.Color=initColor;
+	Right.Thick=initThick;  Right.index=initIndex;
+	Right.Rightborder=initX-initThick;
+}
+//void SetPos();
+void drawBoundary_Right(){bar(Right.X,Right.Y,Right.X-
+
+Right.Thick,Right.Y+Right.Width);}
+void show_Boundary_Right(){drawBoundary_Right();}
+void hide_Boundary_Right(){
+	unsigned int tempColor;
+	tempColor=getcolor();
+	setfillstyle(EMPTY_FILL,getmaxcolor());
+	setcolor(getbkcolor());
+	drawBoundary_Right();
+	setcolor(tempColor);
+	setfillstyle(SOLID_FILL,getcolor());
+}
+enum Boolean collide_boundary_Right(struct bal *balls){
+	if(((balls->X)+(balls->Radius))>Right.Rightborder){
+		reversex(balls);
+		move_ball(balls);
+		show_Boundary_Right();
+	}
+}
+
+void initboundary_Lower(int initX,int initY,int initWidth,int 
+
+initColor,int initThick,enum BoundaryIndex initIndex){
+	Lower.X=initX;  Lower.Y=initY;
+	Lower.Width=initWidth;  Lower.Color=initColor;
+	Lower.Thick=initThick;  Lower.index=initIndex;
+	Lower.Lowerborder=initY-initThick;
+}
+//void SetPos();
+
+void drawBoundary_Lower(){bar(Lower.X,Lower.Y,Lower.X
+
++Lower.Width,Lower.Y-Lower.Thick);}
+void show_Boundary_Lower(){drawBoundary_Lower();}
+void hide_Boundary_Lower(){
+	unsigned int tempColor;
+	tempColor=getcolor();
+	setfillstyle(EMPTY_FILL,getmaxcolor());
+	setcolor(getbkcolor());
+	drawBoundary_Lower();
+	setcolor(tempColor);
+	setfillstyle(SOLID_FILL,getcolor());
+}
+enum Boolean collide_boundary_Lower(struct bal *balls){
+	if(((balls->Y)+(balls->Radius))>=Lower.Lowerborder){
+		reversey(balls);
+		move_ball(balls);
+		show_Boundary_Lower();
+	  }
+}
+
+struct Node{
+	struct bal item;
+	struct Node *next;
+};
+struct Node *head_node;
+struct Node *n0;
+
+void initnode(){
+	head_node=NULL;
+}
+
+void add_ball(struct bal *newitem){
+	struct Node *newnode;
+	newnode=(struct Node*)malloc(sizeof(struct Node));
+	printf("adnew :%d ",newitem);	
+	newnode->item=*newitem;
+	newnode->next=head_node;//head_node
+	head_node=newnode;
+
+}
+
+void show_balls(){
+	struct Node *n;
+	n=head_node;
+	while(n!=NULL){
+		show_ball(&(n->item));
+		n=n->next;
+	}
+}
+
+void hide_balls(){
+	struct Node *n;
+	n=head_node;
+	while(n!=NULL){
+		hide_ball(&(n->item));
+		n=n->next;
+	}
+}
+
+void move_balls(){
+	struct Node *n;
+	n=head_node;
+	while(n!=NULL){
+		move_ball(&(n->item));
+		n=n->next;
+	}
+}
+
+void checkcollide(){
+	struct Node *n1,*n2;
+	n1=head_node;
+	while(n1!=NULL){
+		n2=n1->next;
+		while(n2!=NULL){
+			collide_ball(&(n2->item),&(n1->item));
+			n2=n2->next;
+		}
+		n1=n1->next;
+	}
+}
+
+void print(){
+	struct Node *n;
+	n=head_node;
+
+	while(n!=NULL){
+		//printf("&(n->item):%d ",&(n->item));
+		collide_boundary_Upper(&(n->item));
+		collide_boundary_Left(&(n->item));
+		collide_boundary_Right(&(n->item));
+		collide_boundary_Lower(&(n->item));
+		n=n->next;
+		}
+}
+
+
+
+
+
+void main(){
+	//struct Node *n;
+	int gd=VGA,gm=VGAHI;
+	//n=head_node;
+	
+	initgraph(&gd,&gm,"..//bgi");
+			
+	initball(&ball1,200,200,4,2,15,20);
+	initball(&ball2,300,300,-4,-3,15,20);
+	
+	initboundary_Left(100,50,299,15,5,LeftBound);
+	initboundary_Upper(100,50,439,15,5,UpperBound);
+	initboundary_Right(539,50,299,15,5,RightBound);
+	initboundary_Lower(100,349,439,15,5,LowerBound);
+	initnode();
+
+	add_ball(&ball1); add_ball(&ball2);
+
+	show_balls();
+
+	show_Boundary_Left();
+	show_Boundary_Upper();
+	show_Boundary_Right();
+	show_Boundary_Lower();
+	while(getch()!=ESC){	
+		move_balls();
+		print();
+		checkcollide();		
+  }
+  closegraph();}
